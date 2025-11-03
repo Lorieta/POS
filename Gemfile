@@ -64,3 +64,6 @@ gem "graphiql-rails", group: :development
 
 gem "cloudinary", "~> 2.4"
 gem "activestorage-cloudinary-service", "~> 0.2"
+
+# Enable CORS for Vue frontend
+gem "rack-cors"
