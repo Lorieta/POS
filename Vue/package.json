@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@vue/apollo-composable": "^4.2.2"
+  }
+}

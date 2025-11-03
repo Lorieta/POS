@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Product Upload Test - Cloudinary Active Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .preview {
+            margin-top: 10px;
+            max-width: 100%;
+            display: none;
+        }
+
+        .preview img {
+            max-width: 100%;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .progress {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s;
+            width: 0%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🖼️ Product Upload Test</h1>
+        <p>Test Cloudinary Active Storage integration</p>
+
+        <form id="product-form">
+            <div class="form-group">
+                <label for="name">Product Name *</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Delicious Pizza">
+            </div>
+
+            <div class="form-group">
+                <label for="product_price">Price *</label>
+                <input type="number" id="product_price" name="product_price" step="0.01" required placeholder="12.99">
+            </div>
+
+            <div class="form-group">
+                <label for="product_type">Product Type *</label>
+                <select id="product_type" name="product_type" required>
+                    <option value="">Select type...</option>
+                    <option value="Food">Food</option>
+                    <option value="Beverage">Beverage</option>
+                    <option value="Dessert">Dessert</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image">Product Image *</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+                <div class="preview" id="preview">
+                    <img id="preview-img" src="" alt="Preview">
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">Create Product</button>
+        </form>
+
+        <div class="progress" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p id="progress-text" style="text-align: center; margin-top: 5px;">Uploading...</p>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script type="module">
+        // Simple GraphQL client
+        async function executeGraphQL(query, variables) {
+            const response = await fetch('/graphql', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query, variables })
+            });
+
+            if (!response.ok) {
+                throw new Error(`GraphQL request failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.errors) {
+                throw new Error(data.errors.map(e => e.message).join(', '));
+            }
+
+            return data;
+        }
+
+        // Calculate MD5 checksum
+        async function calculateChecksum(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('MD5', arrayBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return btoa(String.fromCharCode(...hashArray));
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        // Show progress
+        function showProgress(percent, text) {
+            const progress = document.getElementById('progress');
+            const fill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            progress.style.display = 'block';
+            fill.style.width = `${percent}%`;
+            progressText.textContent = text;
+        }
+
+        function hideProgress() {
+            document.getElementById('progress').style.display = 'none';
+        }
+
+        // Image preview
+        document.getElementById('image').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('preview');
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form submission
+        document.getElementById('product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submit-btn');
+            const fileInput = document.getElementById('image');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showStatus('Please select an image', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            showStatus('Starting upload...', 'info');
+
+            try {
+                // Step 1: Calculate checksum
+                showProgress(10, 'Calculating checksum...');
+                const checksum = await calculateChecksum(file);
+
+                // Step 2: Create direct upload
+                showProgress(20, 'Creating direct upload...');
+                const directUploadMutation = `
+          mutation CreateDirectUpload($input: CreateDirectUploadInput!) {
+            createDirectUpload(input: $input) {
+              directUpload {
+                signedId
+                url
+                headers
+              }
+              errors
+            }
+          }
+        `;
+
+                const directUploadResponse = await executeGraphQL(directUploadMutation, {
+                    input: {
+                        filename: file.name,
+                        byteSize: file.size,
+                        checksum: checksum,
+                        contentType: file.type
+                    }
+                });
+
+                const { signedId, url, headers } = directUploadResponse.data.createDirectUpload.directUpload;
+
+                // Step 3: Upload file
+                showProgress(50, 'Uploading file to Cloudinary...');
+                const uploadResponse = await fetch(url, {
+                    method: 'PUT',
+                    body: file,
+                    headers: headers
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+                }
+
+                // Step 4: Create product
+                showProgress(80, 'Creating product...');
+                const createProductMutation = `
+          mutation CreateProduct($input: CreateProductInput!) {
+            createProduct(input: $input) {
+              product {
+                id
+                name
+                productPrice
+                productType
+              }
+              errors
+            }
+          }
+        `;
+
+                const productData = {
+                    name: document.getElementById('name').value,
+                    productPrice: parseFloat(document.getElementById('product_price').value),
+                    productType: document.getElementById('product_type').value,
+                    imageSignedId: signedId
+                };
+
+                const productResponse = await executeGraphQL(createProductMutation, {
+                    input: productData
+                });
+
+                if (productResponse.data.createProduct.errors.length > 0) {
+                    throw new Error(productResponse.data.createProduct.errors.join(', '));
+                }
+
+                const product = productResponse.data.createProduct.product;
+
+                // Success!
+                showProgress(100, 'Complete!');
+                setTimeout(() => {
+                    hideProgress();
+                    showStatus(`✅ Product "${product.name}" created successfully! (ID: ${product.id})`, 'success');
+                    document.getElementById('product-form').reset();
+                    document.getElementById('preview').style.display = 'none';
+                }, 500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                hideProgress();
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
