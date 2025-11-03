@@ -61,3 +61,6 @@ group :development do
   gem "graphql", "~> 2.5", ">= 2.5.14"
 end
 gem "graphiql-rails", group: :development
+
+gem "cloudinary", "~> 2.4"
+gem "activestorage-cloudinary-service", "~> 0.2"
