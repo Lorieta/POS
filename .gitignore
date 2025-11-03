@@ -33,16 +33,15 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
-# Vue Frontend
-/Vue/vue-frontend/node_modules
-/Vue/node_modules
-/Vue/vue-frontend/dist
-/Vue/vue-frontend/.vite
-/Vue/vue-frontend/.env
-/Vue/vue-frontend/.env.local
-/Vue/vue-frontend/.env.*.local
-/Vue/vue-frontend/coverage
-/Vue/vue-frontend/*.log
+# Vue Frontend - build artifacts and dependencies only
+Vue/vue-frontend/node_modules/
+Vue/vue-frontend/dist/
+Vue/vue-frontend/.vite/
+Vue/vue-frontend/.env.local
+Vue/vue-frontend/.env.*.local
+Vue/vue-frontend/coverage/
+Vue/vue-frontend/*.log
+Vue/node_modules/
 
 # Node version manager
 .nvmrc.local
