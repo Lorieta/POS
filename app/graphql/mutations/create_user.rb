@@ -8,7 +8,6 @@ module Mutations
     type Types::UserType
 
     def resolve(credentials:)
- 
   user_attributes = credentials.to_h
   user_attributes[:status] ||= User.statuses.fetch("user")
       User.create!(user_attributes)

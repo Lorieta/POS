@@ -1,7 +1,7 @@
 module Types
   # Corrected class name
   class AuthProviderCredentialsInput < Types::BaseInputObject
-    graphql_name 'AUTH_PROVIDER_CREDENTIALS'
+    graphql_name "AUTH_PROVIDER_CREDENTIALS"
 
     argument :first_name, String, required: true
     argument :last_name, String, required: true
