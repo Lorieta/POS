@@ -53,6 +53,14 @@
               {{ status }}
             </button>
           </div>
+          <div class="ml-4">
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="Search by name or email"
+              class="border rounded-lg px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
         </header>
 
         <div class="overflow-x-auto">
@@ -213,15 +221,30 @@
 
         <!-- Confirm / Complete actions -->
         <div>
-          <button
+          <div
             v-if="selectedOrder?.status === 'Pending'"
-            @click="handleConfirmSelectedOrder"
-            :disabled="confirming"
-            class="w-full mb-2 border bg-green-50 border-green-400 text-green-700 rounded-lg py-2 text-sm font-medium"
+            class="flex gap-2 mb-2"
           >
-            <span v-if="!confirming">Confirm Order</span>
-            <span v-else>Confirming...</span>
-          </button>
+            <button
+              @click="handleConfirmSelectedOrder"
+              :disabled="confirming || rejecting"
+              class="flex-1 border bg-green-50 border-green-400 text-green-700 rounded-lg py-2 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <span v-if="!confirming">Confirm Order</span>
+              <span v-else>Confirming...</span>
+            </button>
+
+            <button
+              @click="handleRejectSelectedOrder"
+              :disabled="rejecting"
+              class="flex-1 border bg-red-50 border-red-400 text-red-700 rounded-lg py-2 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <span v-if="!rejecting">Reject Order</span>
+              <span v-else>Rejecting...</span>
+            </button>
+          </div>
+
+          <p v-if="rejectError" class="mb-2 text-xs text-red-500">{{ rejectError }}</p>
 
           <button
             v-if="selectedOrder && selectedOrder.status === 'For Delivery'"
@@ -252,15 +275,10 @@
             
             
           </div>
-          <div>
-            <p class="uppercase text-gray-400 font-semibold">Proof of Order Delivery</p>
-           
-          </div>
+       
         </div>
 
-        <div class="text-xs text-gray-400">
-          Link updated: {{ lastUpdated }}
-        </div>
+      
       </aside>
     </div>
   </div>
@@ -269,7 +287,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useMutation, useQuery } from '@vue/apollo-composable'
-import { GET_ORDERS_QUERY, SEND_ORDER_EMAILS_MUTATION, UPDATE_ORDER_MUTATION } from '@/graphql'
+import { DELETE_ORDER_MUTATION, GET_ORDERS_QUERY, SEND_ORDER_EMAILS_MUTATION, UPDATE_ORDER_MUTATION } from '@/graphql'
 
 const props = defineProps<{
   initialOrders?: any[]
@@ -315,6 +333,8 @@ const orders = ref<OrderSummary[]>([])
 const savingEdit = ref(false)
 const saveError = ref<string | null>(null)
 const confirming = ref(false)
+const rejecting = ref(false)
+const rejectError = ref<string | null>(null)
 const completing = ref(false)
 const sendingInvoice = ref(false)
 const sendInvoiceError = ref<string | null>(null)
@@ -328,6 +348,7 @@ const { result: ordersResult, loading: ordersLoading, error: ordersError } = use
 )
 
 const { mutate: updateOrderMutation } = useMutation(UPDATE_ORDER_MUTATION)
+const { mutate: deleteOrderMutation } = useMutation(DELETE_ORDER_MUTATION)
 const { mutate: sendOrderEmailsMutation } = useMutation(SEND_ORDER_EMAILS_MUTATION)
 
 const mapStatusBackendToFrontend = (raw: string | null | undefined) => {
@@ -431,7 +452,35 @@ if (props.initialOrders && props.initialOrders.length) {
 
 const selectedOrder = ref<OrderSummary | null>(orders.value[0] ?? null)
 
-const filteredOrders = computed(() => orders.value.filter((order) => order.status === activeStatus.value))
+const searchQuery = ref('')
+
+const filteredOrders = computed(() => {
+  const q = (searchQuery.value || '').trim().toLowerCase()
+  return orders.value.filter((order) => {
+    // first filter by active status
+    if (order.status !== activeStatus.value) return false
+
+    if (!q) return true
+
+    // If query looks like an email, prefer matching email
+    if (q.includes('@')) {
+      return (order.customerEmail || '').toLowerCase().includes(q)
+    }
+
+    // Otherwise match customer name, email, product name or reference id
+    const name = (order.customerName || '').toLowerCase()
+    const email = (order.customerEmail || '').toLowerCase()
+    const product = (order.productName || '').toLowerCase()
+    const refId = (order.referenceId || '').toLowerCase()
+
+    return (
+      name.includes(q) ||
+      email.includes(q) ||
+      product.includes(q) ||
+      refId.includes(q)
+    )
+  })
+})
 
 watch(filteredOrders, (list) => {
   if (!list.length) {
@@ -453,12 +502,13 @@ const tableHeaders = [
   'Order Date',
 ]
 
-const resetInvoiceFeedback = () => {
+const resetOrderActionFeedback = () => {
   sendInvoiceSuccess.value = false
   sendInvoiceError.value = null
+  rejectError.value = null
 }
 
-watch(selectedOrder, resetInvoiceFeedback)
+watch(selectedOrder, resetOrderActionFeedback)
 
 const grabCredit = 5000
 const creditApprovedOn = '11-12-21'
@@ -543,10 +593,34 @@ const handleSendPaymentInvoice = async () => {
   sendInvoiceSuccess.value = false
 
   try {
-    const orderId = selectedOrder.value.id
+    const groupId = selectedOrder.value.groupId
+    
+    // Collect all order IDs that belong to the same group (or just the single order if no group)
+    let orderIdsToSend: string[] = []
+    let groupOrders: OrderSummary[] = []
+    
+    if (groupId) {
+      // Find all orders with the same groupId
+      groupOrders = orders.value.filter(order => order.groupId === groupId)
+      orderIdsToSend = groupOrders.map(order => order.id)
+    } else {
+      // Single order without a group
+      groupOrders = [selectedOrder.value]
+      orderIdsToSend = [selectedOrder.value.id]
+    }
+
+    // Build summary with total for all orders in the group
     const summary = buildInvoiceSummary(selectedOrder.value)
+    
+    // Calculate the total amount for all orders in the group
+    const totalAmount = groupOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0)
+    
+    if (summary.totals && typeof summary.totals === 'object') {
+      (summary.totals as Record<string, number>).grandTotal = totalAmount
+    }
+
     const variables: Record<string, unknown> = {
-      orderIds: [orderId],
+      orderIds: orderIdsToSend,
     }
 
     if (selectedOrder.value.customerEmail) {
@@ -557,8 +631,12 @@ const handleSendPaymentInvoice = async () => {
       variables.summary = summary
     }
 
+    console.log('Sending email with variables:', variables)
+
     const response = await sendOrderEmailsMutation(variables)
     const result = response?.data?.sendOrderEmails
+
+    console.log('Email mutation result:', result)
 
     if (result?.success) {
       sendInvoiceSuccess.value = true
@@ -691,6 +769,46 @@ const handleConfirmSelectedOrder = async () => {
     console.error('Failed to confirm order', err)
   } finally {
     confirming.value = false
+  }
+}
+
+/**
+ * Reject the currently selected order and remove it.
+ */
+const handleRejectSelectedOrder = async () => {
+  if (!selectedOrder.value) return
+
+  rejecting.value = true
+  rejectError.value = null
+
+  const id = selectedOrder.value.id
+  const groupId = selectedOrder.value.groupId
+
+  try {
+    const variables: Record<string, unknown> = {}
+    if (groupId) variables.groupId = groupId
+    else variables.id = id
+
+    const result = await deleteOrderMutation(variables)
+    const payload = result?.data?.deleteOrder
+
+    if (!payload?.success) {
+      rejectError.value = payload?.errors?.join(', ') || 'Failed to reject order.'
+      return
+    }
+
+    if (groupId) {
+      orders.value = orders.value.filter((order) => order.groupId !== groupId)
+    } else {
+      orders.value = orders.value.filter((order) => order.id !== id)
+    }
+
+    selectedOrder.value = null
+  } catch (err) {
+    console.error('Failed to reject order', err)
+    rejectError.value = 'Failed to reject order.'
+  } finally {
+    rejecting.value = false
   }
 }
 

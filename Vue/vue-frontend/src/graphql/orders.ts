@@ -134,6 +134,15 @@ export const UPDATE_ORDER_MUTATION = gql`
   }
 `
 
+export const DELETE_ORDER_MUTATION = gql`
+  mutation DeleteOrder($id: ID, $groupId: String) {
+    deleteOrder(id: $id, groupId: $groupId) {
+      success
+      errors
+    }
+  }
+`
+
 export const SEND_ORDER_EMAILS_MUTATION = gql`
     mutation SendOrderEmails($orderIds: [ID!]!, $recipientEmail: String, $summary: JSON) {
       sendOrderEmails(orderIds: $orderIds, recipientEmail: $recipientEmail, summary: $summary) {

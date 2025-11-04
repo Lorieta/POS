@@ -28,25 +28,8 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3 text-sm">
-        <div class="bg-white rounded-xl shadow-sm px-4 py-2 border border-orange-200 text-orange-500">
-          <p class="uppercase text-xs font-semibold tracking-wide text-gray-400">Grab Express Credit</p>
-          <p class="text-lg font-semibold">₱{{ formatCurrency(grabCredit) }}</p>
-          <p class="text-[11px] text-gray-400">Latest Top-up approved on {{ creditApprovedOn }}</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm px-4 py-2 border border-blue-200 text-blue-500">
-          <p class="uppercase text-xs font-semibold tracking-wide text-gray-400">Accumulated Convenience Fees</p>
-          <div class="flex items-baseline gap-3">
-            <div>
-              <p class="text-[11px] text-gray-400 uppercase">Current Billing</p>
-              <p class="text-lg font-semibold">₱{{ formatCurrency(currentFees) }}</p>
-            </div>
-            <div>
-              <p class="text-[11px] text-gray-400 uppercase">Previous Billing</p>
-              <p class="text-lg font-semibold text-gray-700">₱{{ formatCurrency(previousFees) }}</p>
-              <p class="text-[11px] text-gray-400">Paid</p>
-            </div>
-          </div>
-        </div>
+       
+       
       </div>
     </div>
 
@@ -78,10 +61,7 @@
               />
               <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">🔍</span>
             </div>
-            <button class="flex items-center gap-2 px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
-              <span>Filter</span>
-              <span>⛃</span>
-            </button>
+        
           </div>
         </header>
 
@@ -143,8 +123,16 @@
             :key="item.product.id"
             class="flex items-start gap-3 border rounded-xl p-3"
           >
-            <div class="w-14 h-14 rounded-lg flex items-center justify-center text-2xl bg-blue-50 text-blue-500">
-              {{ item.product.icon }}
+            <div class="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
+              <img
+                v-if="item.product.image"
+                :src="item.product.image"
+                :alt="item.product.name"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full flex items-center justify-center text-2xl bg-blue-50 text-blue-500">
+                {{ item.product.icon }}
+              </div>
             </div>
             <div class="flex-1">
               <p class="text-sm font-semibold text-gray-900">{{ item.product.name }}</p>
