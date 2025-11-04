@@ -11,17 +11,32 @@ module Mutations
     argument :order_date, GraphQL::Types::ISO8601Date, required: false
     argument :total_amount, Float, required: false
 
+    # Delivery information arguments
+    argument :country, String, required: false
+    argument :province, String, required: false
+    argument :city, String, required: false
+    argument :street, String, required: false
+    argument :branggay, String, required: false
+    argument :unit, String, required: false
+    argument :floor, String, required: false
+    argument :building, String, required: false
+    argument :landmark, String, required: false
+    argument :remarks, String, required: false
+
     field :order, Types::OrderType, null: true
-    field :errors, [String], null: false
+    field :errors, [ String ], null: false
 
     def resolve(id:, **attributes)
       order = Order.find_by(id: id)
-      return { order: nil, errors: ["Order not found"] } unless order
+      return { order: nil, errors: [ "Order not found" ] } unless order
+
+      # Extract delivery attributes
+      delivery_attrs = extract_delivery_attributes(attributes)
 
       permitted = attributes.compact
 
       if permitted[:order_quantity]&.<= 0
-        return { order: nil, errors: ["Order quantity must be greater than zero"] }
+        return { order: nil, errors: [ "Order quantity must be greater than zero" ] }
       end
 
       normalize_order_date!(permitted)
@@ -32,20 +47,25 @@ module Mutations
         assign_total_amount(order, total_amount, permitted[:order_quantity])
         order.assign_attributes(permitted)
 
-        if order.save
-          return { order:, errors: [] }
-        else
+        unless order.save
           raise ActiveRecord::Rollback
         end
+
+        # Update or create delivery information if provided
+        if delivery_attrs.any?
+          update_delivery(order, delivery_attrs)
+        end
+
+        return { order:, errors: [] }
       end
 
       { order: nil, errors: order.errors.full_messages }
     rescue ArgumentError => e
       Rails.logger.warn("Update order validation failed: #{e.message}")
-      { order: nil, errors: [e.message] }
+      { order: nil, errors: [ e.message ] }
     rescue StandardError => e
       Rails.logger.error("Update order failed: #{e.message}")
-      { order: nil, errors: ["Failed to update order"] }
+      { order: nil, errors: [ "Failed to update order" ] }
     end
 
     private
@@ -79,6 +99,21 @@ module Mutations
       (price * qty).round(2)
     rescue ArgumentError
       BigDecimal("0")
+    end
+
+    def extract_delivery_attributes(attributes)
+      delivery_fields = [ :country, :province, :city, :street, :branggay, :unit, :floor, :building, :landmark, :remarks ]
+      attributes.slice(*delivery_fields).compact
+    end
+
+    def update_delivery(order, delivery_attrs)
+      delivery = Delivery.find_or_initialize_by(order: order)
+      delivery.user = order.user
+      delivery.assign_attributes(delivery_attrs)
+
+      unless delivery.save
+        raise ActiveRecord::Rollback
+      end
     end
   end
 end

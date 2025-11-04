@@ -7,7 +7,13 @@ class GraphqlController < ApplicationController
   # Use null_session for API endpoints so requests from external clients
   # (cURL, mobile apps, or third-party clients) that don't include the
   # Rails CSRF authenticity token are handled safely.
+  # For API access we treat GraphQL as an API endpoint. We nullify the session
+  # to avoid raising on missing CSRF tokens, and explicitly skip the
+  # verify_authenticity_token before_action so Rails doesn't log the
+  # "Can't verify CSRF token authenticity" message for token-authenticated
+  # requests. Authentication is handled via the Authorization header.
   protect_from_forgery with: :null_session
+  skip_before_action :verify_authenticity_token
 
   def execute
     variables = prepare_variables(params[:variables])

@@ -63,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
 
   create_table "orders", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "group_id"
     t.date "order_date"
     t.integer "order_quantity"
     t.string "payment_method"
@@ -71,6 +72,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
     t.decimal "total_amount", precision: 12, scale: 2, default: "0.0", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["group_id"], name: "index_orders_on_group_id"
     t.index ["product_id"], name: "index_orders_on_product_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end

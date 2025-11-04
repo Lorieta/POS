@@ -1,4 +1,4 @@
-require 'bigdecimal'
+require "bigdecimal"
 
 class Order < ApplicationRecord
   belongs_to :product

@@ -1,6 +1,7 @@
 module Types
   class OrderType < Types::BaseObject
     field :id, ID, null: false
+    field :group_id, String, null: true
     field :order_date, GraphQL::Types::ISO8601Date, null: false
     field :order_quantity, Integer, null: true
     field :payment_method, String, null: true
