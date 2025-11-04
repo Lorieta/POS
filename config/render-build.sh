@@ -3,11 +3,15 @@
 set -o errexit
 
 bundle install
-bin/rails assets:precompile
-bin/rails assets:clean
 
-# Run main database migrations
+# Run database migrations
 bin/rails db:migrate
 
-# Setup solid cable, cache, and queue (Rails 8)
-bin/rails db:prepare
+# Install solid cable, cache, and queue tables (Rails 8)
+bin/rails db:migrate:cable
+bin/rails db:migrate:cache  
+bin/rails db:migrate:queue
+
+# Precompile assets
+bin/rails assets:precompile
+bin/rails assets:clean
