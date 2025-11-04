@@ -58,10 +58,12 @@ group :development, :test do
   gem "rubocop-rails-omakase", require: false
 end
 
+# GraphQL for API
+gem "graphql", "~> 2.5", ">= 2.5.14"
+
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
-  gem "graphql", "~> 2.5", ">= 2.5.14"
 end
 gem "graphiql-rails", group: :development
 
