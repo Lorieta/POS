@@ -2,11 +2,15 @@
 
 set -o errexit
 
+export RAILS_ENV=${RAILS_ENV:-production}
+export RACK_ENV=${RACK_ENV:-production}
+export NODE_ENV=${NODE_ENV:-production}
+
 bundle install
 
-# Create database if it doesn't exist and run migrations
-bin/rails db:create db:schema:load db:migrate
+# Run database migrations against the production database
+bundle exec rails db:migrate
 
-# Precompile assets
-bin/rails assets:precompile
-bin/rails assets:clean
+# Precompile assets after the database is ready
+bundle exec rails assets:precompile
+bundle exec rails assets:clean
