@@ -4,7 +4,8 @@ module Types
   class QueryType < Types::BaseObject
     field :users, [ Types::UserType ], null: false, description: "Returns a list of users"
     field :products, [ Types::ProductType ], null: false, description: "Returns a list of products"
-     field :orders, [ Types::OrderType ], null: false, description: "Returns a list of products"
+    field :orders, [ Types::OrderType ], null: false, description: "Returns a list of products"
+    field :all_products, [ Types::ProductType ], null: false, description: "Returns all products"
     field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
       argument :id, ID, required: true, description: "ID of the object."
     end
@@ -32,11 +33,15 @@ module Types
     end
 
     def products
-      Product.all
+      Product.includes(:user)
     end
 
     def orders
       Order.all
+    end
+
+    def all_products
+      Product.all
     end
   end
 end

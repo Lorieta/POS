@@ -5,6 +5,10 @@ module Types
     field :product_photo, String, null: true
     field :product_price, Float, null: true
     field :product_type, String, null: true
+    field :category, String, null: true
+    field :description, String, null: true
+    field :user_id, ID, null: true
+    field :user, Types::UserType, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :image_url, String, null: true

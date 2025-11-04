@@ -16,7 +16,10 @@ module Mutations
       raise build_error("Incorrect password") unless user.authenticate(password)
 
       # use ActiveSupport::MessageEncryptor to build a token
-      crypt = ActiveSupport::MessageEncryptor.new(Rails.application.credentials.secret_key_base.byteslice(0..31))
+  key_base = Rails.application.credentials.secret_key_base || Rails.application.secret_key_base
+  raise build_error("Missing secret key base") unless key_base.present?
+
+  crypt = ActiveSupport::MessageEncryptor.new(key_base.byteslice(0..31))
       token = crypt.encrypt_and_sign("user-id:#{user.id}")
 
       { user: user, token: token }

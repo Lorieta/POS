@@ -1,5 +1,5 @@
 class Product < ApplicationRecord
-    has_one :user
+    belongs_to :user, optional: true
     has_many :orders
     has_many :deliveries
     has_one_attached :image

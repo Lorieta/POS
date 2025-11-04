@@ -25,6 +25,9 @@ puts "Created user: #{user.email}"
 product = Product.find_or_create_by!(name: "Sample Product") do |p|
   p.product_price = 10.99
   p.product_type = "General"
+  p.category = "General"
+  p.description = "Sample product description"
+  p.user = user
 end
 puts "Created product: #{product.name}"
 
