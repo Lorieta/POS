@@ -33,7 +33,6 @@ puts "Created product: #{product.name}"
 
 # Create an order
 order = Order.find_or_create_by!(user: user, product: product) do |o|
-  o.order_date = Date.today
   o.order_quantity = 2
   o.payment_method = "Credit Card"
 end

@@ -45,3 +45,4 @@ Vue/node_modules/
 
 # Node version manager
 .nvmrc.local
+sendgrid.env

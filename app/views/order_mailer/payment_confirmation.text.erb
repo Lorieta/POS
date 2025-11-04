@@ -1,0 +1,32 @@
+Hi <%= @summary.dig(:customer, :first_name) %> <%= @summary.dig(:customer, :last_name) %>,
+
+Your payment for the following order has been captured successfully.
+
+Order References:
+<% @orders.each do |order| %>
+- ##<%= order.id %> – <%= order.product&.name %> x <%= order.order_quantity %> — ₱<%= number_to_currency(order.total_amount, unit: '', format: '%n', delimiter: ',', precision: 2) %>
+<% end %>
+
+Customer:
+Name: <%= [@summary.dig(:customer, :first_name), @summary.dig(:customer, :last_name)].compact.join(' ') %>
+Email: <%= @summary.dig(:customer, :email) || @recipient %>
+Contact: <%= @summary.dig(:customer, :mobile) %>
+
+Delivery:
+<%= @summary.dig(:address, :street) %>, <%= @summary.dig(:address, :barangay) %>, <%= @summary.dig(:address, :city) %>, <%= @summary.dig(:address, :province) %>, <%= @summary.dig(:address, :country) %>
+Building: <%= @summary.dig(:address, :building) %>
+Floor: <%= @summary.dig(:address, :floor) %>
+Unit: <%= @summary.dig(:address, :room_unit) %>
+Landmark: <%= @summary.dig(:address, :landmark) %>
+Remarks: <%= @summary.dig(:address, :remarks) %>
+
+Payment Summary:
+Payment Method: <%= @summary[:payment_method] %>
+Coupon Code: <%= @summary[:coupon_code] || 'N/A' %>
+Subtotal: ₱<%= number_to_currency(@summary.dig(:totals, :subtotal), unit: '', format: '%n', delimiter: ',', precision: 2) %>
+VAT: ₱<%= number_to_currency(@summary.dig(:totals, :vat), unit: '', format: '%n', delimiter: ',', precision: 2) %>
+Delivery Fee: ₱<%= number_to_currency(@summary.dig(:totals, :delivery_fee), unit: '', format: '%n', delimiter: ',', precision: 2) %>
+Convenience Fee: ₱<%= number_to_currency(@summary.dig(:totals, :convenience_fee), unit: '', format: '%n', delimiter: ',', precision: 2) %>
+Grand Total: ₱<%= number_to_currency(@summary.dig(:totals, :grand_total), unit: '', format: '%n', delimiter: ',', precision: 2) %>
+
+Thank you for ordering with us.

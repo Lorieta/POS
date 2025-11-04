@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+      body { font-family: Arial, sans-serif; color: #1f2933; }
+      .section { margin-top: 16px; }
+      .section h2 { font-size: 16px; margin-bottom: 8px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+      th, td { padding: 8px; border-bottom: 1px solid #d2d6dc; text-align: left; font-size: 14px; }
+      .totals td { font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <p>Hi <%= @summary.dig(:customer, :first_name) %> <%= @summary.dig(:customer, :last_name) %>,</p>
+    <p>Your payment for the following order has been captured successfully.</p>
+
+    <div class="section">
+      <h2>Order References</h2>
+      <ul>
+        <% @orders.each do |order| %>
+          <li>#<%= order.id %> – <%= order.product&.name %> × <%= order.order_quantity %> — ₱<%= number_to_currency(order.total_amount, unit: '', format: '%n', delimiter: ',', precision: 2) %></li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Customer</h2>
+      <p>
+        <strong>Name:</strong> <%= [@summary.dig(:customer, :first_name), @summary.dig(:customer, :last_name)].compact.join(' ') %><br>
+        <strong>Email:</strong> <%= @summary.dig(:customer, :email) || @recipient %><br>
+        <strong>Contact:</strong> <%= @summary.dig(:customer, :mobile) %>
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Delivery</h2>
+      <p>
+        <%= @summary.dig(:address, :street) %>,
+        <%= @summary.dig(:address, :barangay) %>,
+        <%= @summary.dig(:address, :city) %>,
+        <%= @summary.dig(:address, :province) %>,
+        <%= @summary.dig(:address, :country) %><br>
+        <strong>Building:</strong> <%= @summary.dig(:address, :building) %><br>
+        <strong>Floor:</strong> <%= @summary.dig(:address, :floor) %><br>
+        <strong>Unit:</strong> <%= @summary.dig(:address, :room_unit) %><br>
+        <strong>Landmark:</strong> <%= @summary.dig(:address, :landmark) %><br>
+        <strong>Remarks:</strong> <%= @summary.dig(:address, :remarks) %>
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Payment Summary</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td>Payment Method</td>
+            <td><%= @summary[:payment_method] %></td>
+          </tr>
+          <tr>
+            <td>Coupon Code</td>
+            <td><%= @summary[:coupon_code] || 'N/A' %></td>
+          </tr>
+          <tr>
+            <td>Subtotal</td>
+            <td>₱<%= number_to_currency(@summary.dig(:totals, :subtotal), unit: '', format: '%n', delimiter: ',', precision: 2) %></td>
+          </tr>
+          <tr>
+            <td>VAT</td>
+            <td>₱<%= number_to_currency(@summary.dig(:totals, :vat), unit: '', format: '%n', delimiter: ',', precision: 2) %></td>
+          </tr>
+          <tr>
+            <td>Delivery Fee</td>
+            <td>₱<%= number_to_currency(@summary.dig(:totals, :delivery_fee), unit: '', format: '%n', delimiter: ',', precision: 2) %></td>
+          </tr>
+          <tr>
+            <td>Convenience Fee</td>
+            <td>₱<%= number_to_currency(@summary.dig(:totals, :convenience_fee), unit: '', format: '%n', delimiter: ',', precision: 2) %></td>
+          </tr>
+          <tr class="totals">
+            <td>Grand Total</td>
+            <td>₱<%= number_to_currency(@summary.dig(:totals, :grand_total), unit: '', format: '%n', delimiter: ',', precision: 2) %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Thank you for ordering with us.</p>
+  </body>
+</html>
