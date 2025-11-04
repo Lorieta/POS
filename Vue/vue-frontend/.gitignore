@@ -67,3 +67,4 @@ __screenshots__/
 
 # Misc
 *.local
+.vercel

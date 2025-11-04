@@ -462,12 +462,7 @@ const filteredOrders = computed(() => {
 
     if (!q) return true
 
-    // If query looks like an email, prefer matching email
-    if (q.includes('@')) {
-      return (order.customerEmail || '').toLowerCase().includes(q)
-    }
-
-    // Otherwise match customer name, email, product name or reference id
+    // Match customer name, email, product name or reference id
     const name = (order.customerName || '').toLowerCase()
     const email = (order.customerEmail || '').toLowerCase()
     const product = (order.productName || '').toLowerCase()

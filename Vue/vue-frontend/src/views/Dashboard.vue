@@ -60,7 +60,7 @@
       </nav>
 
       <footer class="text-xs text-center text-gray-400 py-4 border-t">
-        Made with ❤️ using Vue
+    
       </footer>
     </aside>
 
