@@ -15,7 +15,7 @@ module Mutations
       raise build_error("Account does not exist") unless user
       raise build_error("Incorrect password") unless user.authenticate(password)
 
-      # use ActiveSupport::MessageEncryptor to build a token
+  # use ActiveSupport::MessageEncryptor to build a token
   key_base = Rails.application.credentials.secret_key_base || Rails.application.secret_key_base
   raise build_error("Missing secret key base") unless key_base.present?
 

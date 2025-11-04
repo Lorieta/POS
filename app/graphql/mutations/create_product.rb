@@ -11,7 +11,7 @@ module Mutations
   argument :image_signed_id, String, required: false
 
     field :product, Types::ProductType, null: true
-    field :errors, [String], null: false
+    field :errors, [ String ], null: false
 
     def resolve(name:, product_price:, product_type:, category: nil, description: nil, user_id: nil, image_signed_id: nil)
       product = Product.new(
@@ -26,7 +26,7 @@ module Mutations
         product.user = current_user
       elsif user_id.present?
         user = User.find_by(id: user_id)
-        return { product: nil, errors: ["User not found"] } unless user
+        return { product: nil, errors: [ "User not found" ] } unless user
 
         product.user = user
       end

@@ -11,11 +11,11 @@ module Mutations
   argument :image_signed_id, String, required: false
 
     field :product, Types::ProductType, null: true
-    field :errors, [String], null: false
+    field :errors, [ String ], null: false
 
     def resolve(id:, **attributes)
       product = Product.find_by(id: id)
-      return { product: nil, errors: ['Product not found'] } unless product
+      return { product: nil, errors: [ "Product not found" ] } unless product
 
       image_signed_id = attributes.delete(:image_signed_id)
 
@@ -39,7 +39,7 @@ module Mutations
       { product:, errors: [] }
     rescue StandardError => e
       Rails.logger.error("Update product failed: #{e.message}")
-      { product: nil, errors: ['Failed to update product'] }
+      { product: nil, errors: [ "Failed to update product" ] }
     end
   end
 end

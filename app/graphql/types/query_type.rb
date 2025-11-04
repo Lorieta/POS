@@ -29,7 +29,7 @@ module Types
     field :test_field, String, null: false,
       description: "An example field added by the generator"
     def users
-      User.where(status: 'user')
+      User.where(status: "user")
     end
 
     def products
@@ -43,7 +43,5 @@ module Types
     def all_products
       Product.all
     end
-
-   
   end
 end

@@ -8,7 +8,7 @@ module Mutations
     argument :content_type, String, required: false
 
     field :direct_upload, Types::DirectUploadType, null: true
-    field :errors, [String], null: false
+    field :errors, [ String ], null: false
 
     def resolve(filename:, byte_size:, checksum:, content_type: nil)
       blob = ActiveStorage::Blob.create_before_direct_upload!(
@@ -32,7 +32,7 @@ module Mutations
       { direct_upload:, errors: [] }
     rescue StandardError => e
       Rails.logger.error("Direct upload setup failed: #{e.message}")
-      { direct_upload: nil, errors: ["Direct upload setup failed"] }
+      { direct_upload: nil, errors: [ "Direct upload setup failed" ] }
     end
   end
 end

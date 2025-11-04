@@ -16,7 +16,7 @@ class GraphqlController < ApplicationController
     context = {
       request: request,
       url_options: { host: request.host, port: request.port, protocol: request.protocol },
-      current_user: current_user_from_token,
+      current_user: current_user_from_token
     }
 
     result = ActiveStorage::Current.set(url_options: context[:url_options]) do
@@ -58,18 +58,18 @@ class GraphqlController < ApplicationController
   end
 
   def current_user_from_token
-    auth_header = request.headers['Authorization']
+    auth_header = request.headers["Authorization"]
     return nil unless auth_header.present?
 
-    scheme, token = auth_header.split(' ', 2)
-    return nil unless scheme == 'Bearer' && token.present?
+    scheme, token = auth_header.split(" ", 2)
+    return nil unless scheme == "Bearer" && token.present?
 
     key_base = Rails.application.credentials.secret_key_base || Rails.application.secret_key_base
     return nil unless key_base.present?
 
     crypt = ActiveSupport::MessageEncryptor.new(key_base.byteslice(0..31))
     decrypted = crypt.decrypt_and_verify(token)
-    user_id = decrypted.split(':').last
+    user_id = decrypted.split(":").last
     User.find_by(id: user_id)
   rescue ActiveSupport::MessageVerifier::InvalidSignature, ActiveSupport::MessageEncryptor::InvalidMessage, ArgumentError
     nil
