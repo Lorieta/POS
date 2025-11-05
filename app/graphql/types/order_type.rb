@@ -8,7 +8,7 @@ module Types
     field :total_amount, Float, null: false
     field :status, Types::OrderStatusEnum, null: false
     field :product, Types::ProductType, null: false
-    field :user, Types::UserType, null: false
+  field :customer, Types::CustomerType, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 

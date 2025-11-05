@@ -281,6 +281,7 @@ interface CheckoutSummary {
   customer?: CustomerDetails
   address?: AddressDetails
   paymentMethod?: string
+  customerId?: number
 }
 
 interface CustomerDetails {
@@ -439,6 +440,7 @@ const onPlaceOrder = (payload: {
   customer?: CustomerDetails
   address?: AddressDetails
   paymentMethod?: string
+  customerId?: number
 }) => {
   if (payload.couponCode !== undefined) {
     couponCode.value = payload.couponCode
@@ -457,6 +459,7 @@ const onPlaceOrder = (payload: {
     customer: payload.customer,
     address: payload.address,
     paymentMethod: payload.paymentMethod,
+    customerId: payload.customerId,
   })
 }
 

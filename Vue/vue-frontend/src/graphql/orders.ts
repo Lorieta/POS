@@ -5,7 +5,7 @@ export const CREATE_ORDER_MUTATION = gql`
     $productId: ID!
     $orderQuantity: Int!
     $paymentMethod: String
-    $userId: ID
+    $customerId: ID!
     $totalAmount: Float
     $groupId: String
     $country: String
@@ -23,7 +23,7 @@ export const CREATE_ORDER_MUTATION = gql`
       productId: $productId
       orderQuantity: $orderQuantity
       paymentMethod: $paymentMethod
-      userId: $userId
+  customerId: $customerId
       totalAmount: $totalAmount
       groupId: $groupId
       country: $country
@@ -50,11 +50,12 @@ export const CREATE_ORDER_MUTATION = gql`
           name
           productPrice
         }
-        user {
+        customer {
           id
           email
           firstName
           lastName
+          phoneNumber
         }
         createdAt
         updatedAt
@@ -79,11 +80,12 @@ export const GET_ORDERS_QUERY = gql`
         name
         productPrice
       }
-      user {
+      customer {
         id
         email
         firstName
         lastName
+        phoneNumber
       }
       createdAt
       updatedAt
@@ -120,11 +122,12 @@ export const UPDATE_ORDER_MUTATION = gql`
           name
           productPrice
         }
-        user {
+        customer {
           id
           email
           firstName
           lastName
+          phoneNumber
         }
         createdAt
         updatedAt

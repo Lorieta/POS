@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_05_102000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "customers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "delivery_id"
+    t.string "email"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "phone_number"
+    t.datetime "updated_at", null: false
+    t.index ["delivery_id"], name: "index_customers_on_delivery_id"
+  end
+
   create_table "deliveries", force: :cascade do |t|
     t.string "branggay"
     t.string "building"
@@ -56,13 +67,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
     t.string "street"
     t.string "unit"
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.integer "user_id"
     t.index ["order_id"], name: "index_deliveries_on_order_id"
     t.index ["user_id"], name: "index_deliveries_on_user_id"
   end
 
   create_table "orders", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "customer_id", null: false
     t.string "group_id"
     t.date "order_date"
     t.integer "order_quantity"
@@ -71,10 +83,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
     t.string "status", default: "pending", null: false
     t.decimal "total_amount", precision: 12, scale: 2, default: "0.0", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.index ["customer_id"], name: "index_orders_on_customer_id"
     t.index ["group_id"], name: "index_orders_on_group_id"
     t.index ["product_id"], name: "index_orders_on_product_id"
-    t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
   create_table "products", force: :cascade do |t|
@@ -104,9 +115,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_04_101000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "customers", "deliveries"
   add_foreign_key "deliveries", "orders"
   add_foreign_key "deliveries", "users"
+  add_foreign_key "orders", "customers"
   add_foreign_key "orders", "products"
-  add_foreign_key "orders", "users"
   add_foreign_key "products", "users"
 end

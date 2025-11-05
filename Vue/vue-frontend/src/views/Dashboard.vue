@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
+  <div class="flex h-screen bg-gray-100 w-full">
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r shadow-sm flex flex-col">
       <div class="flex items-center justify-center py-4 border-b">
@@ -55,7 +55,7 @@
               </button>
             </li>
           </ul>
-          <li class="px-6 py-2 hover:bg-blue-50 cursor-pointer">Shipping Manager</li>
+        
         </ul>
       </nav>
 
@@ -65,7 +65,7 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col w-full">
       <!-- Top Bar -->
       <Navbar
         :title="navbarState.title"
@@ -137,7 +137,7 @@ import OrderPlacedModal from '../component/OrderPlacedModal.vue'
 import Catalogue from '../component/Catalogue.vue'
 import CartModal from '../component/CartModal.vue'
 import UserCheckout from '../component/UserCheckout.vue'
-import { CREATE_ORDER_MUTATION } from '@/graphql'
+import { CREATE_ORDER_MUTATION, CREATE_CUSTOMER_MUTATION } from '@/graphql'
 
 const sections = {
   ORDER_MANAGER: 'order-manager',
@@ -207,9 +207,11 @@ interface CheckoutSummary {
   customer?: CheckoutCustomer
   address?: CheckoutAddress
   paymentMethod?: string
+  customerId?: number
 }
 
 const { mutate: createOrderMutation } = useMutation(CREATE_ORDER_MUTATION)
+const { mutate: createCustomerMutation } = useMutation(CREATE_CUSTOMER_MUTATION)
 const recentOrders = ref<any[]>([])
 const creatingOrder = ref(false)
 
@@ -257,15 +259,34 @@ const handleCartCheckout = () => {
 }
 
 const handleUserCheckoutPlaceOrder = async (payload: any) => {
-  const userId = localStorage.getItem('userId') ?? undefined
-
   try {
     creatingOrder.value = true
     recentOrders.value = []
-    
+
+    // Step 1: Create or find the customer
+    const customerResult = await createCustomerMutation({
+      firstName: payload.customer.firstName,
+      lastName: payload.customer.lastName,
+      email: payload.customer.email,
+      phoneNumber: payload.customer.mobile,
+    })
+
+    const customerErrors = customerResult?.data?.createCustomer?.errors
+    if (customerErrors && customerErrors.length > 0) {
+      console.error('Error creating customer:', customerErrors)
+      // Optionally, show a user-facing error message
+      return
+    }
+
+    const customerId = customerResult?.data?.createCustomer?.customer?.id
+    if (!customerId) {
+      console.error('Failed to get customer ID after creation.')
+      return
+    }
+
     // Generate a single group id for this checkout so all created orders are associated
     const groupId = `grp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    
+
     for (const item of payload.items) {
       const totalAmount = Number((item.price * item.quantity).toFixed(2))
       const variables: Record<string, unknown> = {
@@ -274,10 +295,9 @@ const handleUserCheckoutPlaceOrder = async (payload: any) => {
         paymentMethod: payload.paymentMethod,
         totalAmount,
         groupId,
-      }
-
-      if (userId) {
-        variables.userId = userId
+        // GraphQL ID scalar is expected to be a string. Coerce here to avoid
+        // "Variable $customerId of type ID! was provided invalid value" errors
+        customerId: customerId !== undefined && customerId !== null ? String(customerId) : customerId,
       }
 
       // Add delivery information from payload.address
@@ -309,7 +329,7 @@ const handleUserCheckoutPlaceOrder = async (payload: any) => {
 
     // Clear the cart after successful order
     catalogueCart.value = []
-    
+
     // Store created orders and the checkout summary for the success modal
     placedOrders.value = [...recentOrders.value]
     placedSummary.value = {
@@ -391,6 +411,16 @@ const handleCheckout = async (summary: CheckoutSummary) => {
     recentOrders.value = []
     // Generate a single group id for this checkout so all created orders are associated
     const groupId = `grp_${Date.now()}_${Math.random().toString(36).slice(2,8)}`
+    // Determine the customerId to use. Prefer the summary's customerId, then
+    // fall back to any userId stored in localStorage. GraphQL expects an ID
+    // scalar (string), so coerce numeric IDs to strings.
+    const rawCustomerId = summary.customerId ?? userId
+    if (!rawCustomerId) {
+      console.error('No customerId available for order creation. Aborting.')
+      return
+    }
+    const customerIdString = String(rawCustomerId)
+
     for (const entry of summary.items) {
       const totalAmount = Number((entry.product.price * entry.quantity).toFixed(2))
       const variables: Record<string, unknown> = {
@@ -398,10 +428,7 @@ const handleCheckout = async (summary: CheckoutSummary) => {
         orderQuantity: entry.quantity,
         paymentMethod,
         totalAmount,
-      }
-
-      if (userId) {
-        variables.userId = userId
+        customerId: customerIdString,
       }
 
       // include the checkout-level group id so orders created in this loop are grouped

@@ -21,7 +21,7 @@
             <select
               v-if="hasCustomerList"
               v-model="selectedCustomerId"
-              :disabled="customersLoading"
+              :disabled="customersLoading || isViewing"
               class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <option :value="null" disabled>Select customer email</option>
@@ -39,6 +39,7 @@
               type="email"
               placeholder="name@example.com"
               class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+              :disabled="isViewing"
             />
           </div>
           <div>
@@ -46,7 +47,7 @@
             <select
               v-if="hasCustomerList"
               v-model="selectedCustomerId"
-              :disabled="customersLoading"
+              :disabled="customersLoading || isViewing"
               class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <option :value="null" disabled>Select customer mobile</option>
@@ -64,15 +65,16 @@
               type="tel"
               placeholder="+63 9xx xxx xxxx"
               class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+              :disabled="isViewing"
             />
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">First Name</label>
-            <input v-model="customer.firstName" type="text" placeholder="First Name" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="customer.firstName" type="text" placeholder="First Name" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Last Name</label>
-            <input v-model="customer.lastName" type="text" placeholder="Last Name" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="customer.lastName" type="text" placeholder="Last Name" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
         </div>
 
@@ -91,6 +93,7 @@
                 type="radio"
                 :value="option"
                 class="text-orange-500 focus:ring-orange-400"
+                :disabled="isViewing"
               />
               <span class="text-sm font-medium">{{ option }}</span>
             </label>
@@ -102,52 +105,52 @@
         <div class="grid sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs text-gray-500 mb-1">Country</label>
-            <input v-model="address.country" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
+            <input v-model="address.country" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing">
               <option value="Philippines">Philippines</option>
           </input>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Province</label>
-            <input v-model="address.province" type="text" placeholder="NCR" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.province" type="text" placeholder="NCR" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">City</label>
-            <input v-model="address.city" type="text" placeholder="City/Municipality" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.city" type="text" placeholder="City/Municipality" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Street</label>
-            <input v-model="address.street" type="text" placeholder="Street" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.street" type="text" placeholder="Street" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Barangay</label>
-            <input v-model="address.barangay" type="text" placeholder="Barangay" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.barangay" type="text" placeholder="Barangay" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Room / Unit</label>
-            <input v-model="address.roomUnit" type="text" placeholder="Unit" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.roomUnit" type="text" placeholder="Unit" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Floor</label>
-            <input v-model="address.floor" type="text" placeholder="Floor" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.floor" type="text" placeholder="Floor" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Building</label>
-            <input v-model="address.building" type="text" placeholder="Building" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.building" type="text" placeholder="Building" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Nearest Landmark</label>
-            <input v-model="address.landmark" type="text" placeholder="Landmark" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.landmark" type="text" placeholder="Landmark" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">Remarks</label>
-            <input v-model="address.remarks" type="text" placeholder="Optional" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="address.remarks" type="text" placeholder="Optional" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
         </div>
 
         <div class="grid sm:grid-cols-2 gap-4 pt-2">
           <div>
             <label class="block text-xs text-gray-500 mb-1">Coupon or Promo Code</label>
-            <input v-model="coupon" type="text" placeholder="Type here" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"/>
+            <input v-model="coupon" type="text" placeholder="Type here" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" :disabled="isViewing"/>
           </div>
         </div>
 
@@ -159,10 +162,11 @@
           <button class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium" @click="emit('cancel')">Cancel</button>
           <button
             class="bg-orange-500 text-white py-2 px-4 rounded-lg font-medium disabled:opacity-60 disabled:cursor-not-allowed"
-            :disabled="!hasItems"
+            :disabled="!hasItems || isViewing || isCreatingCustomer"
             @click="placeOrder"
           >
-            Place Order
+            <template v-if="isCreatingCustomer">Creating...</template>
+            <template v-else>Place Order</template>
           </button>
         </div>
       </section>
@@ -203,8 +207,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useQuery } from '@vue/apollo-composable'
-import { GET_CUSTOMERS_QUERY } from '@/graphql'
+import { useQuery, useMutation } from '@vue/apollo-composable'
+import { GET_CUSTOMERS_QUERY, CREATE_CUSTOMER_MUTATION } from '@/graphql'
 
 interface Product {
   id: number
@@ -222,24 +226,6 @@ interface CartEntry {
   product: Product
   quantity: number
 }
-
-const props = defineProps<{
-  items: CartEntry[]
-  totals: { subtotal: number; vat: number; deliveryFee: number; convenienceFee: number; grandTotal: number }
-  couponCode?: string
-}>()
-
-const emit = defineEmits<{
-  (e: 'place-order', payload: {
-    couponCode: string
-    customer: CustomerInfo
-    address: AddressInfo
-    paymentMethod: PaymentOption
-    customerId?: number
-  }): void
-  (e: 'cancel'): void
-  (e: 'back'): void
-}>()
 
 interface CustomerInfo {
   email: string
@@ -261,6 +247,32 @@ interface AddressInfo {
   remarks: string
 }
 
+const paymentOptions = ['GCash', 'Cash on Delivery', 'Bank Transfer'] as const
+type PaymentOption = (typeof paymentOptions)[number]
+
+const props = defineProps<{
+  items: CartEntry[]
+  totals: { subtotal: number; vat: number; deliveryFee: number; convenienceFee: number; grandTotal: number }
+  couponCode?: string
+  order?: {
+    customer: CustomerInfo
+    address: AddressInfo
+    paymentMethod: PaymentOption
+  }
+}>()
+
+const emit = defineEmits<{
+  (e: 'place-order', payload: {
+    couponCode: string
+    customer: CustomerInfo
+    address: AddressInfo
+    paymentMethod: PaymentOption
+    customerId?: number
+  }): void
+  (e: 'cancel'): void
+  (e: 'back'): void
+}>()
+
 interface CustomerRecord {
   id: number
   email: string
@@ -268,6 +280,8 @@ interface CustomerRecord {
   lastName: string
   phoneNumber: string
 }
+
+const isViewing = computed(() => !!props.order)
 
 const customer = ref<CustomerInfo>({ email: '', mobile: '', firstName: '', lastName: '' })
 const address = ref<AddressInfo>({
@@ -282,15 +296,29 @@ const address = ref<AddressInfo>({
   landmark: '',
   remarks: '',
 })
-
-const paymentOptions = ['GCash', 'Cash on Delivery', 'Bank Transfer'] as const
-type PaymentOption = (typeof paymentOptions)[number]
 const paymentMethod = ref<PaymentOption>('GCash')
+
+watch(
+  () => props.order,
+  (newOrder) => {
+    if (newOrder) {
+      customer.value = newOrder.customer
+      address.value = newOrder.address
+      paymentMethod.value = newOrder.paymentMethod
+    }
+  },
+  { immediate: true }
+)
 
 const customers = ref<CustomerRecord[]>([])
 const selectedCustomerId = ref<number | null>(null)
+const isCreatingCustomer = ref(false)
 
-const { result: customersResult, loading: customersLoading, error: customersError } = useQuery(GET_CUSTOMERS_QUERY)
+const { mutate: createCustomerMutation } = useMutation(CREATE_CUSTOMER_MUTATION)
+
+const { result: customersResult, loading: customersLoading, error: customersError } = useQuery(GET_CUSTOMERS_QUERY, null, {
+  enabled: computed(() => !isViewing.value)
+})
 
 const applySelectedCustomer = (record?: CustomerRecord) => {
   if (!record) return
@@ -306,13 +334,15 @@ const applySelectedCustomer = (record?: CustomerRecord) => {
 watch(
   customersResult,
   (value) => {
-    const incoming = value?.users ?? []
-    customers.value = incoming.map((user: any) => ({
-      id: Number(user.id),
-      email: user.email ?? '',
-      firstName: user.firstName ?? '',
-      lastName: user.lastName ?? '',
-      phoneNumber: user.phoneNumber ?? '',
+    if (isViewing.value) return
+
+    const incoming = value?.customers ?? []
+    customers.value = incoming.map((customer: any) => ({
+      id: Number(customer.id),
+      email: customer.email ?? '',
+      firstName: customer.firstName ?? '',
+      lastName: customer.lastName ?? '',
+      phoneNumber: customer.phoneNumber ?? '',
     }))
 
     if (!customers.value.length) {
@@ -336,6 +366,8 @@ watch(
   { immediate: true },
 )
 watch(selectedCustomerId, (newId) => {
+  if (isViewing.value) return
+
   const normalizedId = typeof newId === 'string' ? Number(newId) : newId
   if (!normalizedId) {
     selectedCustomerId.value = null
@@ -354,7 +386,7 @@ watch(selectedCustomerId, (newId) => {
 const coupon = ref(props.couponCode ?? '')
 const errorMessage = ref('')
 
-const hasCustomerList = computed(() => customers.value.length > 0)
+const hasCustomerList = computed(() => !isViewing.value && customers.value.length > 0)
 const customersErrorMessage = computed(() => customersError.value?.message ?? 'Unable to load customers.')
 
 watch(
@@ -374,6 +406,8 @@ const formatCurrency = (amount: number) => {
 }
 
 const validatePayload = () => {
+  if (isViewing.value) return false // Cannot place order in view mode
+
   if (!hasItems.value) {
     errorMessage.value = 'Add at least one item to the cart before placing an order.'
     return false
@@ -402,12 +436,48 @@ const validatePayload = () => {
   return true
 }
 
-const placeOrder = () => {
+const placeOrder = async () => {
   if (!validatePayload()) return
+
+  // If no existing customer selected, create one first
+  let finalCustomerId: number | string | undefined = selectedCustomerId.value ?? undefined
+
+  if (!finalCustomerId) {
+    isCreatingCustomer.value = true
+    try {
+      const resp = await createCustomerMutation({
+        firstName: customer.value.firstName.trim(),
+        lastName: customer.value.lastName.trim(),
+        email: customer.value.email.trim(),
+        phoneNumber: customer.value.mobile.trim(),
+      })
+
+      const createErrors = resp?.data?.createCustomer?.errors
+      if (createErrors && createErrors.length > 0) {
+        errorMessage.value = 'Failed to create customer: ' + (createErrors.join ? createErrors.join(', ') : String(createErrors))
+        return
+      }
+
+      const created = resp?.data?.createCustomer?.customer
+      if (!created || !created.id) {
+        errorMessage.value = 'Failed to create customer: no ID returned.'
+        return
+      }
+
+      // Normalize id to number when used in this component, but emit may accept string too
+      finalCustomerId = Number(created.id)
+      selectedCustomerId.value = finalCustomerId
+    } catch (err: any) {
+      errorMessage.value = err?.message ?? String(err)
+      return
+    } finally {
+      isCreatingCustomer.value = false
+    }
+  }
 
   emit('place-order', {
     couponCode: coupon.value.trim(),
-    customerId: selectedCustomerId.value ?? undefined,
+    customerId: finalCustomerId ?? undefined,
     customer: {
       email: customer.value.email.trim(),
       mobile: customer.value.mobile.trim(),

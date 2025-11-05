@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex min-h-screen items-center justify-center overflow-hidden">
+  <div class="relative flex min-h-screen items-center justify-center overflow-hidden m-4">
     <!-- Background elements (already good) -->
     <div class="absolute inset-0 -z-10">
       <div class="absolute -left-32 top-10 h-72 w-72 rounded-full bg-blue-600/30 blur-3xl" />
@@ -8,7 +8,7 @@
 
     <!-- Login Card -->
     <div
-      class="w-full max-w-sm rounded-3xl bg-white/95 p-10 shadow-[0_25px_60px_-15px_rgba(8,36,111,0.35)] backdrop-blur"
+      class="w-full  max-w-sm rounded-3xl bg-white/95 p-10 shadow-[0_25px_60px_-15px_rgba(8,36,111,0.35)] backdrop-blur"
     >
       <div class="text-center">
         <h2 class="text-3xl font-semibold text-slate-900">Login</h2>

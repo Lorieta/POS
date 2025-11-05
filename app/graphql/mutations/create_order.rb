@@ -7,9 +7,9 @@ module Mutations
     argument :product_id, ID, required: true
     argument :order_quantity, Integer, required: true
     argument :payment_method, String, required: false
-    argument :user_id, ID, required: false
+    argument :customer_id, ID, required: true
     argument :total_amount, Float, required: false
-  argument :group_id, String, required: false
+    argument :group_id, String, required: false
 
     # Delivery information arguments
     argument :country, String, required: false
@@ -29,8 +29,8 @@ module Mutations
     def resolve(
       product_id:,
       order_quantity:,
-      payment_method: nil,
-      user_id: nil,
+    payment_method: nil,
+    customer_id:,
       total_amount: nil,
       country: nil,
       province: nil,
@@ -46,14 +46,14 @@ module Mutations
     )
       return invalid_quantity unless order_quantity.positive?
 
-      user = resolve_user(user_id)
-      return { order: nil, errors: [ "User not found" ] } unless user
-
       product = Product.find_by(id: product_id)
       return { order: nil, errors: [ "Product not found" ] } unless product
 
+      customer = Customer.find_by(id: customer_id)
+      return { order: nil, errors: [ "Customer not found" ] } unless customer
+
       order = Order.new(
-        user: user,
+        customer: customer,
         product: product,
         order_quantity: order_quantity,
         payment_method: payment_method.presence,
@@ -79,7 +79,6 @@ module Mutations
         if has_delivery_info?(country, province, city, street, branggay, unit, floor, building, landmark, remarks)
           delivery = Delivery.new(
             order: order,
-            user: user,
             country: country.presence,
             province: province.presence,
             city: city.presence,
@@ -92,10 +91,14 @@ module Mutations
             remarks: remarks.presence
           )
 
+          delivery.user = context[:current_user] if context[:current_user].present?
+
           unless delivery.save
             raise ActiveRecord::Rollback
             return { order: nil, errors: delivery.errors.full_messages }
           end
+
+          customer.update(delivery: delivery) if customer.delivery_id.nil?
         end
       end
 
@@ -103,14 +106,6 @@ module Mutations
     end
 
     private
-
-    def resolve_user(user_id)
-      current_user = context[:current_user]
-      return current_user if current_user.present?
-      return User.find_by(id: user_id) if user_id.present?
-
-      nil
-    end
 
     def calculate_total(product, order_quantity)
       price = BigDecimal(product.product_price.to_s)

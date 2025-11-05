@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+   <div class="space-y-6">
     <div class="flex items-center text-sm text-blue-500 gap-2">
   <button class="flex items-center gap-1" @click="handleBack">
         <span class="text-lg">&larr;</span>
@@ -402,9 +402,11 @@ const orderIdFromReference = (referenceId: string) => referenceId.replace(/^#/, 
 
 const mapServerOrder = (o: any): OrderSummary => {
   const productName = o.product?.name ?? 'Product'
-  const firstName = o.user?.firstName ?? ''
-  const lastName = o.user?.lastName ?? ''
-  const customerName = `${firstName} ${lastName}`.trim() || 'Customer'
+  // Support both API shapes: some responses nest customer info under `customer`
+  // while others (legacy) use `user`. Prefer `customer` when available.
+  const firstName = o.customer?.firstName ?? o.user?.firstName ?? ''
+  const lastName = o.customer?.lastName ?? o.user?.lastName ?? ''
+  const customerName = `${firstName} ${lastName}`.trim() || (o.customer?.email ?? o.user?.email ?? 'Customer')
   const totalAmount = Number(o.totalAmount ?? 0)
   const paymentMethod = o.paymentMethod ?? 'Unknown'
   const orderDateSource = o.createdAt || o.orderDate
@@ -419,9 +421,9 @@ const mapServerOrder = (o: any): OrderSummary => {
     groupId: o.groupId ?? null, // store group ID
     productName,
     customerName,
-    customerEmail: o.user?.email ?? null,
-    customerFirstName: firstName,
-    customerLastName: lastName,
+  customerEmail: o.customer?.email ?? o.user?.email ?? null,
+  customerFirstName: firstName,
+  customerLastName: lastName,
     totalAmount,
     salesChannel: 'POS',
     salesChannelIcon: '�',

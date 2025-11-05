@@ -31,14 +31,22 @@ product = Product.find_or_create_by!(name: "Sample Product") do |p|
 end
 puts "Created product: #{product.name}"
 
-# Create an order
-order = Order.find_or_create_by!(user: user, product: product) do |o|
+# Create a customer
+customer = Customer.find_or_create_by!(email: "customer@example.com") do |c|
+  c.first_name = "Sample"
+  c.last_name = "Customer"
+  c.phone_number = "0987654321"
+end
+puts "Created customer: #{customer.email}"
+
+# Create an order for the customer
+order = Order.find_or_create_by!(customer: customer, product: product) do |o|
   o.order_quantity = 2
   o.payment_method = "Credit Card"
 end
 puts "Created order: #{order.id}"
 
-# Create a delivery
+# Create a delivery and associate it with the user and order
 delivery = Delivery.find_or_create_by!(order: order) do |d|
   d.user = user
   d.street = "123 Main St"
@@ -48,5 +56,8 @@ delivery = Delivery.find_or_create_by!(order: order) do |d|
   d.branggay = "Downtown"
 end
 puts "Created delivery for order: #{delivery.order_id}"
+
+# Link the customer's default delivery if not already set
+customer.update!(delivery: delivery) if customer.delivery != delivery
 
 puts "Seeding complete."

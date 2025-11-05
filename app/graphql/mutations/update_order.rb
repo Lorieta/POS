@@ -108,11 +108,16 @@ module Mutations
 
     def update_delivery(order, delivery_attrs)
       delivery = Delivery.find_or_initialize_by(order: order)
-      delivery.user = order.user
+      current_user = context[:current_user]
+      delivery.user = current_user if current_user.present?
       delivery.assign_attributes(delivery_attrs)
 
       unless delivery.save
         raise ActiveRecord::Rollback
+      end
+
+      if order.customer.present? && order.customer.delivery_id.nil?
+        order.customer.update(delivery: delivery)
       end
     end
   end

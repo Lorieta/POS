@@ -2,7 +2,7 @@ require "bigdecimal"
 
 class Order < ApplicationRecord
   belongs_to :product
-  belongs_to :user
+  belongs_to :customer
   has_many :deliveries, dependent: :destroy
 
   before_validation :compute_total_amount

@@ -7,6 +7,7 @@ module Types
     field :sign_in_user, mutation: Mutations::SignInUser
     field :logout_user, mutation: Mutations::LogoutUser
     field :create_product, mutation: Mutations::CreateProduct
+  field :create_customer, mutation: Mutations::CreateCustomer
     field :create_direct_upload, mutation: Mutations::CreateDirectUpload
     field :update_product, mutation: Mutations::UpdateProduct
     field :delete_product, mutation: Mutations::DeleteProduct
